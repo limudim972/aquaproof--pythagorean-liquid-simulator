@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>משפט פיתגורס – הדגמת נוזל אינטראקטיבית</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  :root {
+    --bg-deep: #060a14;
+    --bg-mid: #0c1225;
+    --accent-a: #ef4444;
+    --accent-a-glow: rgba(239,68,68,0.25);
+    --accent-b: #22c55e;
+    --accent-b-glow: rgba(34,197,94,0.25);
+    --accent-c: #eab308;
+    --accent-c-glow: rgba(234,179,8,0.25);
+    --water: #3b82f6;
+    --water-deep: #1d4ed8;
+    --text: #e8ecf4;
+    --text-muted: #6b7fa0;
+    --glass: rgba(255,255,255,0.04);
+    --glass-border: rgba(255,255,255,0.07);
+    --ring: rgba(100,160,255,0.12);
+  }
+
+  html, body {
+    width:100%;height:100%;overflow:hidden;
+    background:var(--bg-deep);
+    color:var(--text);
+    font-family:'Heebo','Rubik',system-ui,sans-serif;
+    touch-action:none;
+    -webkit-user-select:none;user-select:none;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  body {
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:
+      radial-gradient(ellipse 80% 60% at 25% 15%, rgba(59,130,246,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 70% 50% at 75% 85%, rgba(234,179,8,0.04) 0%, transparent 60%),
+      radial-gradient(circle at 50% 50%, var(--bg-mid) 0%, var(--bg-deep) 100%);
+  }
+
+  /* Header */
+  #app-header {
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    display:flex;align-items:center;justify-content:center;gap:14px;
+    padding:10px 20px;
+    background:linear-gradient(180deg,rgba(6,10,20,0.97) 0%,rgba(6,10,20,0.8) 80%,transparent 100%);
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  }
+
+  #app-header h1 {
+    font-family:'Rubik','Heebo',sans-serif;
+    font-size:clamp(15px,3.4vw,21px);font-weight:700;
+    background:linear-gradient(135deg,var(--accent-c) 0%,#fff 45%,var(--accent-b) 100%);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    background-clip:text;
+    letter-spacing:0.01em;
+  }
+
+  .formula-badge {
+    font-size:clamp(10px,2.3vw,13px);
+    padding:4px 14px;border-radius:20px;
+    background:rgba(234,179,8,0.08);
+    border:1px solid rgba(234,179,8,0.2);
+    color:var(--accent-c);font-weight:600;white-space:nowrap;
+    font-family:'Rubik',sans-serif;
+    letter-spacing:0.04em;
+  }
+  .formula-badge .va{color:var(--accent-a)}
+  .formula-badge .vb{color:var(--accent-b)}
+  .formula-badge .vc{color:var(--accent-c)}
+
+  /* Canvas area */
+  #canvas-wrap {
+    position:relative;display:flex;align-items:center;justify-content:center;
+    flex:1;width:100%;
+    padding-top:52px;padding-bottom:84px;
+  }
+
+  canvas#mainCanvas {
+    display:block;border-radius:50%;cursor:grab;
+    box-shadow:
+      0 0 0 1px var(--glass-border),
+      0 0 60px rgba(59,130,246,0.04),
+      0 0 120px rgba(59,130,246,0.02);
+    transition:box-shadow 0.6s ease;
+  }
+  canvas#mainCanvas:active{cursor:grabbing}
+
+  /* Controls */
+  #controls {
+    position:fixed;bottom:0;left:0;right:0;z-index:100;
+    display:flex;align-items:center;justify-content:center;
+    gap:8px;padding:12px 16px 18px;flex-wrap:wrap;
+    background:linear-gradient(0deg,rgba(6,10,20,0.97) 0%,rgba(6,10,20,0.8) 80%,transparent 100%);
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  }
+
+  .ctrl-btn {
+    font-family:'Heebo',sans-serif;
+    font-size:clamp(12px,2.6vw,14px);font-weight:600;
+    padding:7px 18px;border:1.5px solid transparent;border-radius:24px;
+    cursor:pointer;outline:none;position:relative;overflow:hidden;
+    transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+    letter-spacing:0.01em;
+  }
+  .ctrl-btn:active{transform:scale(0.96)}
+
+  .btn-c2 {
+    background:rgba(234,179,8,0.08);
+    border-color:rgba(234,179,8,0.22);
+    color:var(--accent-c);
+  }
+  .btn-c2:hover,.btn-c2.active {
+    background:rgba(234,179,8,0.18);
+    border-color:rgba(234,179,8,0.5);
+    box-shadow:0 0 24px var(--accent-c-glow);
+  }
+
+  .btn-ab {
+    background:linear-gradient(135deg,rgba(239,68,68,0.06),rgba(34,197,94,0.06));
+    border-color:rgba(34,197,94,0.2);
+    color:var(--accent-b);
+  }
+  .btn-ab:hover,.btn-ab.active {
+    background:linear-gradient(135deg,rgba(239,68,68,0.14),rgba(34,197,94,0.14));
+    border-color:rgba(34,197,94,0.45);
+    box-shadow:0 0 24px var(--accent-b-glow);
+  }
+
+  .btn-reset {
+    background:var(--glass);
+    border-color:var(--glass-border);
+    color:var(--text-muted);
+  }
+  .btn-reset:hover {
+    background:rgba(255,255,255,0.08);
+    border-color:rgba(255,255,255,0.2);
+    color:var(--text);
+  }
+
+  .btn-sensor {
+    background:rgba(59,130,246,0.06);
+    border-color:rgba(59,130,246,0.2);
+    color:#60a5fa;
+    font-size:clamp(10px,2.1vw,12px);
+  }
+  .btn-sensor:hover,.btn-sensor.active {
+    background:rgba(59,130,246,0.15);
+    border-color:rgba(59,130,246,0.45);
+    box-shadow:0 0 18px rgba(59,130,246,0.15);
+  }
+
+  /* Sensor panel */
+  #sensor-panel {
+    position:fixed;top:52px;left:10px;z-index:90;
+    background:rgba(12,18,37,0.92);
+    border:1px solid var(--glass-border);border-radius:10px;
+    padding:8px 12px;font-size:11px;color:var(--text-muted);
+    display:none;direction:ltr;
+    font-variant-numeric:tabular-nums;min-width:140px;
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    font-family:'Rubik',monospace;
+  }
+  #sensor-panel.visible{display:block}
+  #sensor-panel .row{display:flex;justify-content:space-between;padding:2px 0;gap:12px}
+  #sensor-panel .lbl{color:#60a5fa;font-weight:600}
+
+  /* Hint overlay */
+  #hint-overlay {
+    position:fixed;inset:0;z-index:200;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:rgba(6,10,20,0.75);
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    opacity:1;transition:opacity 0.5s ease;
+    pointer-events:auto;cursor:pointer;
+  }
+  #hint-overlay.hidden{opacity:0;pointer-events:none}
+
+  .hint-hand {
+    width:56px;height:56px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:40px;
+    animation:swipeHint 2.4s cubic-bezier(0.4,0,0.2,1) infinite;
+    filter:drop-shadow(0 0 16px rgba(255,255,255,0.2));
+  }
+  .hint-label {
+    margin-top:14px;font-size:clamp(14px,3vw,17px);
+    color:var(--text-muted);text-align:center;font-weight:500;
+  }
+  .hint-sub {
+    margin-top:6px;font-size:clamp(11px,2.2vw,13px);
+    color:rgba(107,127,160,0.6);text-align:center;font-weight:300;
+  }
+
+  @keyframes swipeHint {
+    0%,100%{transform:translateX(-24px) rotate(-12deg);opacity:.5}
+    50%{transform:translateX(24px) rotate(12deg);opacity:1}
+  }
+
+  /* Equation bar at very top inside header */
+  .eq-visual {
+    position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+    z-index:50;
+    display:flex;align-items:center;gap:6px;
+    font-family:'Rubik',sans-serif;font-size:clamp(11px,2.4vw,14px);font-weight:600;
+    color:rgba(232,236,244,0.35);
+    opacity:0;transition:opacity 0.6s ease;
+    pointer-events:none;white-space:nowrap;
+  }
+  .eq-visual.show{opacity:1}
+  .eq-visual .va{color:var(--accent-a)}
+  .eq-visual .vb{color:var(--accent-b)}
+  .eq-visual .vc{color:var(--accent-c)}
+  .eq-visual .eq-sign{color:rgba(232,236,244,0.45);font-weight:400}
+</style>
+</head>
+<body>
+
+<header id="app-header">
+  <h1>משפט פיתגורס</h1>
+  <span class="formula-badge"><span class="va">a²</span> + <span class="vb">b²</span> = <span class="vc">c²</span></span>
+</header>
+
+<div id="canvas-wrap">
+  <canvas id="mainCanvas"></canvas>
+</div>
+
+<div class="eq-visual" id="eqVisual">
+  <span class="va">9</span>
+  <span class="eq-sign">+</span>
+  <span class="vb">16</span>
+  <span class="eq-sign">=</span>
+  <span class="vc">25</span>
+</div>
+
+<div id="controls">
+  <button class="ctrl-btn btn-c2" id="btnFillC">מלא c²</button>
+  <button class="ctrl-btn btn-ab" id="btnFillAB">מלא a²+b²</button>
+  <button class="ctrl-btn btn-reset" id="btnReset">איפוס</button>
+  <button class="ctrl-btn btn-sensor" id="btnSensor">חיישנים</button>
+</div>
+
+<div id="sensor-panel">
+  <div class="row"><span class="lbl">α</span><span id="sAlpha">0.0°</span></div>
+  <div class="row"><span class="lbl">β</span><span id="sBeta">0.0°</span></div>
+  <div class="row"><span class="lbl">γ</span><span id="sGamma">0.0°</span></div>
+</div>
+
+<div id="hint-overlay">
+  <div class="hint-hand">👆</div>
+  <div class="hint-label">גרור לסיבוב</div>
+  <div class="hint-sub">או לחץ על הכפתורים למלא מים</div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
